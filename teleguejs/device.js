@@ -22,6 +22,10 @@ exports.motorshield = null;
 var oldAxeX, oldAxeY;
 var aliveTimestamp = 0;
 
+exports.motor1 = null;
+exports.motor2 = null;
+exports.light = null;
+exports.lightButton = null;
 
 /* check alive timer */
 exports.checkAlive = function() {
@@ -63,6 +67,8 @@ global.parseCommand = function(data) {
 				var axeX;
 				var axeY;
 
+				var buttons = buffer[5] | (buffer[6] << 8) | (buffer[7] << 16);
+				ParseButtons(buttons);
 
 				if (!TYPE) {
 					/* regular joystick */
@@ -93,6 +99,43 @@ global.parseCommand = function(data) {
 
 
 }
+
+
+global.parseWSCommand = function(message) {
+
+	var json
+	try {
+		json = JSON.parse(message);
+	} catch (err) {
+		return;
+	}
+
+	switch (json.cmd) {	
+
+		case "alive":
+			// alive command
+			var d = new Date();
+			aliveTimestamp = d.getTime();
+		break;
+
+		case "drive":
+			// move command
+			MoveTracksAbs (json.v1, json.v2);
+		break;
+
+		case "adrive":
+			// move command analogue
+			MoveTracks (json.v1, json.v2);
+		break;
+
+		case "light":
+			// toggle or turn on/off lights
+			SetLight(json.v)
+		break;
+	}
+
+}
+
 
 
 /* stop all motors */
@@ -145,27 +188,104 @@ function MoveTracks (val1, val2){
 			speed2 = parseInt(Math.abs(speed2) *  100 / MAXSPEED);
 
 			if (dir1) {
-				exports.motorshield.J1.setDirection (1, 1, 0);
+				exports.motorshield.J1.setDirection (exports.motor1, 1, 0);
 			} else {
-				exports.motorshield.J1.setDirection (1, 0, 1);
+				exports.motorshield.J1.setDirection (exports.motor1, 0, 1);
 			}
 
 			if (dir2) {
-				exports.motorshield.J1.setDirection (2, 0, 1);
+				exports.motorshield.J1.setDirection (exports.motor2, 0, 1);
 			} else {
-				exports.motorshield.J1.setDirection (2, 1, 0);
+				exports.motorshield.J1.setDirection (exports.motor2, 1, 0);
 			}
 
 			if (!speed1){
-				exports.motorshield.J1.setDirection (1, 1, 1);
+				exports.motorshield.J1.setDirection (exports.motor1, 1, 1);
 			}
 
 			if (!speed2){
-				exports.motorshield.J1.setDirection (2, 1, 1);
+				exports.motorshield.J1.setDirection (exports.motor2, 1, 1);
 			}
 
 
-			exports.motorshield.J1.setSpeed(1, speed1);
-			exports.motorshield.J1.setSpeed(2, speed2);
+			exports.motorshield.J1.setSpeed(exports.motor1, speed1);
+			exports.motorshield.J1.setSpeed(exports.motor2, speed2);
 
 }
+
+
+/* 
+move tracks absolute values
+	speed1 - speed1
+	speed2 - speed2
+*/
+function MoveTracksAbs (speed1, speed2){
+
+            var dir1 = 0;
+            var dir2 = 0;
+
+			if (speed1 >= NEUTRAL )
+				dir1 = 1;
+			else
+			if (speed1 < NEUTRAL)
+				dir1 = 0;
+
+			if (speed2 >= NEUTRAL)
+				dir2 = 1;
+			else
+			if (speed2 < NEUTRAL)
+				dir2 = 0;
+
+			speed1 = parseInt(Math.abs(speed1 - NEUTRAL) *  100 / MAXSPEED);
+			speed2 = parseInt(Math.abs(speed2 - NEUTRAL) *  100 / MAXSPEED);
+
+			if (dir1) {
+				exports.motorshield.J1.setDirection (exports.motor1, 1, 0);
+			} else {
+				exports.motorshield.J1.setDirection (exports.motor1, 0, 1);
+			}
+
+			if (dir2) {
+				exports.motorshield.J1.setDirection (exports.motor2, 0, 1);
+			} else {
+				exports.motorshield.J1.setDirection (exports.motor2, 1, 0);
+			}
+
+			if (!speed1){
+				exports.motorshield.J1.setDirection (exports.motor1, 1, 1);
+			}
+
+			if (!speed2){
+				exports.motorshield.J1.setDirection (exports.motor2, 1, 1);
+			}
+
+			exports.motorshield.J1.setSpeed(exports.motor1, speed1);
+			exports.motorshield.J1.setSpeed(exports.motor2, speed2);
+}
+
+
+function ParseButtons (value) {
+	if (value & exports.lightButton)
+		SetLight(0);
+}
+
+
+function SetLight (value) {
+
+	switch (value) {
+		case 0:
+			// toggle
+			var current = exports.motorshield.J16.getSpeed(exports.light);
+			exports.motorshield.J16.setSpeed(exports.light, (current > 0) ? 0 : 255);
+		break;
+		case 1:
+			// turn on
+			exports.motorshield.J16.setSpeed(exports.light, 100);
+		break;
+		case 2:
+			// turn off
+			exports.motorshield.J16.setSpeed(exports.light, 0);
+		break;
+	}
+}
+

@@ -6,9 +6,15 @@ process.on('uncaughtException', function (err) {
 /* device module */
 var device = require("./device.js");
 
+device.motor1 = 1;
+device.motor2 = 2;
+device.light = 8;
+device.lightButton = 0xFFFFFF; // any button
+
 // starting UDP server
 var udpsocket = require('./udpserver.js');
 udpsocket.start(1082);
+udpsocket.onData = global.parseCommand;
 
 /* make board object */
 var virt2real = require("virt2real");
@@ -21,17 +27,24 @@ motorshield.init();
 
 device.motorshield = motorshield;
 
-// starting TCP server
+/* starting TCP server */
 var tcpsocket = require('./tcpserver.js');
 tcpsocket.start(1082);
 tcpsocket.onConnect = ClientConnected;
 tcpsocket.onEnd = ClientDisconnected;
 tcpsocket.onError = ClientDisconnected;
 
+/* starting Websockets server */
+var wsserver = require('./wsserver.js');
+wsserver.onConnect = onWsConnect;
+wsserver.onData = global.parseWSCommand;
+wsserver.start(1083);
+
 
 /* check status module */
 var status = require("./status.js");
 status.send = tcpsocket.send;
+status.wssend = wsserver.send;
 status.motorshield = motorshield;
 status.start(1000);
 
@@ -71,3 +84,7 @@ function ClientDisconnected(remoteHost, remotePort) {
 
 }
 
+
+function onWsConnect(message) {
+	console.log("*** Websocket client connected");
+}

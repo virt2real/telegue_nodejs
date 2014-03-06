@@ -12,8 +12,7 @@ exports.onData = null;
 global.server = dgram.createSocket("udp4");
 
 global.server.on("message", function (data, rinfo) {
-	global.parseCommand(data);
+	if (exports.onData) exports.onData(data);
 });
-
 
 console.log('*** UDP server module loaded');

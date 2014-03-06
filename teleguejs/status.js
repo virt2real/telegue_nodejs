@@ -10,6 +10,10 @@ var wlanStatus = {
 
 /* function for send info via TCP socket */
 exports.send = null;
+
+/* function for send info via websocket */
+exports.wssend = null;
+
 exports.motorshield = null;
 
 exports.start = function(timeout){
@@ -49,6 +53,9 @@ function SendStatus() {
 
 	if (exports.send) 
 		exports.send(JSON.stringify(status)); // send info via TCP
+
+	if (exports.wssend) 
+		exports.wssend(JSON.stringify(status)); // send info via Websockets
 
 }
 
