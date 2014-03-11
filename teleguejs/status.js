@@ -16,6 +16,9 @@ exports.wssend = null;
 
 exports.motorshield = null;
 
+/* function for text overlay */
+exports.videoText = null;
+
 exports.start = function(timeout){
 
 	statusTimer = setInterval(SendStatus, timeout);

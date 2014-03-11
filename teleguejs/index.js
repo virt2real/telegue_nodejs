@@ -40,6 +40,8 @@ wsserver.onConnect = onWsConnect;
 wsserver.onData = global.parseWSCommand;
 wsserver.start(1083);
 
+/* video control module */
+var video = require("./video.js");
 
 /* check status module */
 var status = require("./status.js");
@@ -52,38 +54,17 @@ status.start(1000);
 /* start connection alive timer */
 var aliveTimer = setInterval(device.checkAlive, 500);
 
-
-
 function ClientConnected(remoteHost, remotePort) {
-
 	// now will start video stream on client's host (but not this port!)
-
-	console.log("*** starting video stream to " + remoteHost);
-
-	var exec = require('child_process').exec, child;
-
-	var cmd = 'gst-client -p 0 set udpsink0 host string ' + remoteHost + ' && gst-client -p 0 play';
-	child = exec(cmd, null);	
-
+	video.play(remoteHost);
 }
 
 function ClientDisconnected(remoteHost, remotePort) {
-
 	// stop all motors
-
 	device.StopAll;
-
 	// now will stop video stream
-
-	console.log("*** pause video stream");
-
-	var exec = require('child_process').exec, child;
-
-	var cmd = 'gst-client -p 0 pause';
-	child = exec(cmd, null);	
-
+	video.pause();
 }
-
 
 function onWsConnect(message) {
 	console.log("*** Websocket client connected");
