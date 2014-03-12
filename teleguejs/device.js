@@ -25,7 +25,16 @@ var aliveTimestamp = 0;
 exports.motor1 = null;
 exports.motor2 = null;
 exports.light = null;
-exports.lightButton = null;
+
+/* buttons */
+exports.lightButton = null; // light toggle
+exports.cameraUp = null; // camera tilt up
+exports.cameraDown = null; // camera tilt down
+exports.cameraLeft = null; // camera pan left
+exports.cameraRight = null; // camera pan right
+
+
+exports.SetLight = SetLight;
 
 /* check alive timer */
 exports.checkAlive = function() {
@@ -128,9 +137,14 @@ global.parseWSCommand = function(message) {
 			MoveTracks (json.v1, json.v2);
 		break;
 
+		case "pantilt":
+			// move camera pan and tilt
+			PanTilt(json.v1, json.v2);
+		break;
+
 		case "light":
 			// toggle or turn on/off lights
-			SetLight(json.v)
+			SetLight(json.v1);
 		break;
 	}
 
@@ -265,8 +279,17 @@ function MoveTracksAbs (speed1, speed2){
 
 
 function ParseButtons (value) {
+
+	if (value & exports.cameraDown) {
+		exports.motorshield.J17.setPos(1, exports.motorshield.J17.getPos(1) + 10);
+	}
+	if (value & exports.cameraUp) {
+		exports.motorshield.J17.setPos(1, exports.motorshield.J17.getPos(1) - 10);
+	}
+
 	if (value & exports.lightButton)
 		SetLight(0);
+
 }
 
 
@@ -289,3 +312,8 @@ function SetLight (value) {
 	}
 }
 
+
+function PanTilt(value1, value2) {
+	exports.motorshield.J17.setPos(1, value2);
+	exports.motorshield.J17.setPos(2, value1);
+}

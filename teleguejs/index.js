@@ -6,10 +6,15 @@ process.on('uncaughtException', function (err) {
 /* device module */
 var device = require("./device.js");
 
+/* motors */
 device.motor1 = 1;
 device.motor2 = 2;
 device.light = 8;
+
+/* buttons for control */
 device.lightButton = 0xFFFFFF; // any button
+device.cameraUp = 8; // tilt up
+device.cameraDown = 1; // tilt down
 
 // starting UDP server
 var udpsocket = require('./udpserver.js');
@@ -23,7 +28,10 @@ var board = new virt2real();
 /* make motorshield object */
 var motorshield = require("motorshield");
 motorshield.setAddress(0x70);
+motorshield.setDivider(50);
 motorshield.init();
+motorshield.J17.setLimits(8, 700, 2300, 180);
+motorshield.J17.setLimits(7, 700, 2300, 180);
 
 device.motorshield = motorshield;
 
@@ -50,6 +58,7 @@ status.wssend = wsserver.send;
 status.motorshield = motorshield;
 status.start(1000);
 
+device.SetLight(1);
 
 /* start connection alive timer */
 var aliveTimer = setInterval(device.checkAlive, 500);
