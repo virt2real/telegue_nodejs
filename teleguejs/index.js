@@ -28,7 +28,8 @@ var board = new virt2real();
 /* make motorshield object */
 var motorshield = require("motorshield");
 motorshield.setAddress(0x70);
-motorshield.setDivider(50);
+//motorshield.setDivider(50);
+motorshield.setFreq(50);
 motorshield.init();
 motorshield.J17.setLimits(8, 700, 2300, 180);
 motorshield.J17.setLimits(7, 700, 2300, 180);
