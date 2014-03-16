@@ -46,6 +46,7 @@ tcpsocket.onError = ClientDisconnected;
 /* starting Websockets server */
 var wsserver = require('./wsserver.js');
 wsserver.onConnect = onWsConnect;
+wsserver.onEnd = onWsDisconnect;
 wsserver.onData = global.parseWSCommand;
 wsserver.start(1083);
 
@@ -76,6 +77,12 @@ function ClientDisconnected(remoteHost, remotePort) {
 	video.pause();
 }
 
-function onWsConnect(message) {
-	console.log("*** Websocket client connected");
+function onWsConnect(remoteHost, remotePort) {
+	console.log("*** Websocket client connected from " + remoteHost + ":" + remotePort);
+	video.play(remoteHost);
+}
+
+function onWsDisconnect(remoteHost, remotePort) {
+	console.log("*** Websocket client disconnected from " + remoteHost + ":" + remotePort);
+	video.pause();
 }

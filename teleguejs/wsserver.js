@@ -25,7 +25,7 @@ exports.start = function(port){
 
 		sockets.push(ws);
 
-		if (exports.onConnect) exports.onConnect(ws);
+		if (exports.onConnect) exports.onConnect(ws._socket.remoteAddress, ws._socket.remotePort);
 
 		ws.on('message', function(message) {
 			if (exports.onData) exports.onData(message);
@@ -33,7 +33,8 @@ exports.start = function(port){
 
 		ws.on('close', function(message) {
 			
-			if (exports.onEnd) exports.onEnd(message);
+			if (exports.onEnd)
+				exports.onEnd(ws._socket._peername.address, ws._socket._peername.port);
 
 			console.log("*** connection closed");
 

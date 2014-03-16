@@ -4,7 +4,7 @@
 	= 0 - regular joystick
 	= 1 - wheel and pedals
 */
-var TYPE = 1;
+var TYPE = 0;
 
 /* maximum alive timeout */
 var MAXTIMEOUT = 1000;
@@ -141,6 +141,19 @@ global.parseWSCommand = function(message) {
 			// move camera pan and tilt
 			PanTilt(json.v1, json.v2);
 		break;
+
+		case "cam":
+			// move camera pan and tilt on fixed step
+			if (json.v1 == 0)
+				exports.motorshield.J17.setPos(1, exports.motorshield.J17.getPos(1) + 10);
+			if (json.v1 == 1)
+				exports.motorshield.J17.setPos(1, exports.motorshield.J17.getPos(1) - 10);
+			if (json.v1 == 2)
+				exports.motorshield.J17.setPos(2, exports.motorshield.J17.getPos(1) + 10);
+			if (json.v1 == 3)
+				exports.motorshield.J17.setPos(2, exports.motorshield.J17.getPos(1) - 10);
+		break;			
+
 
 		case "light":
 			// toggle or turn on/off lights
